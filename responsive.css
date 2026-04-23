@@ -1,0 +1,17 @@
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 3px; }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 900px) {
+  .stats-grid { grid-template-columns: repeat(2,1fr); }
+  .dashboard-bottom { grid-template-columns: 1fr; }
+  .reports-grid { grid-template-columns: 1fr; }
+  .sidebar { width: 200px; min-width: 200px; }
+}
+@media (max-width: 640px) {
+  .sidebar { display: none; }
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .login-card { padding: 24px; }
+}

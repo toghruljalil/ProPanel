@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ProPanel — Rol Tabanlı Proje Yönetim Sistemi</title>
+  <meta name="description" content="Admin, Editor ve Viewer rollerini destekleyen modern proje yönetim paneli demo uygulaması." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="responsive.css" />
+</head>
+<body>
+
+  <!-- ===================== LOGIN SCREEN ===================== -->
+  <div id="login-screen" class="screen active">
+    <div class="login-bg">
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+    </div>
+    <div class="login-card">
+      <div class="login-logo">
+        <div class="logo-icon">⬡</div>
+        <span class="logo-text">ProPanel</span>
+      </div>
+      <h1 class="login-title">Rol Tabanlı Erişim Demo</h1>
+      <p class="login-subtitle">E-posta ve şifreniz ile sisteme giriş yapın</p>
+
+      <div class="login-form" style="background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:20px; margin-bottom:20px;">
+        <div class="form-group">
+          <label class="form-label">E-posta</label>
+          <input class="form-input" type="email" id="login-email" placeholder="ornek@domain.com" onkeydown="if(event.key==='Enter') document.getElementById('login-password').focus()" />
+        </div>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label class="form-label">🔒 Şifre</label>
+          <input class="form-input" type="password" id="login-password" placeholder="Şifrenizi girin..." onkeydown="if(event.key==='Enter') handleLogin()" />
+        </div>
+        <div id="login-error" style="color:#ef4444; font-size:13px; min-height:18px; margin-bottom:12px;"></div>
+        <button class="btn btn-primary" id="login-btn" onclick="handleLogin()" style="width:100%">Giriş Yap</button>
+      </div>
+
+      <!-- Permission Table -->
+      <div class="permission-table-wrap">
+        <h3 class="perm-title">Rol İzin Tablosu</h3>
+        <table class="permission-table">
+          <thead>
+            <tr>
+              <th>İzin</th>
+              <th><span class="th-badge admin-badge">Admin</span></th>
+              <th><span class="th-badge editor-badge">Editor</span></th>
+              <th><span class="th-badge viewer-badge">Viewer</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Projeleri Görüntüle</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+            <tr><td>Proje Oluştur</td><td class="yes">✓</td><td class="yes">✓</td><td class="no">✗</td></tr>
+            <tr><td>Proje Düzenle</td><td class="yes">✓</td><td class="yes">✓</td><td class="no">✗</td></tr>
+            <tr><td>Proje Sil</td><td class="yes">✓</td><td class="no">✗</td><td class="no">✗</td></tr>
+            <tr><td>Kullanıcıları Yönet</td><td class="yes">✓</td><td class="no">✗</td><td class="no">✗</td></tr>
+            <tr><td>Raporları Görüntüle</td><td class="yes">✓</td><td class="no">✗</td><td class="no">✗</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== DASHBOARD SCREEN ===================== -->
+  <div id="dashboard-screen" class="screen">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <div class="logo-icon">⬡</div>
+          <span class="logo-text">ProPanel</span>
+        </div>
+      </div>
+
+      <div class="sidebar-user" id="sidebar-user">
+        <div class="user-avatar" id="user-avatar">A</div>
+        <div class="user-info">
+          <div class="user-name" id="user-name">Admin</div>
+          <div class="user-role-badge" id="user-role-badge">ADMIN</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-label">Ana Menü</div>
+        <button class="nav-item active" id="nav-dashboard" onclick="showSection('dashboard')">
+          <span class="nav-icon">📊</span> Dashboard
+        </button>
+        <button class="nav-item" id="nav-projects" onclick="showSection('projects')">
+          <span class="nav-icon">📁</span> Projeler
+        </button>
+        <button class="nav-item" id="nav-users" onclick="showSection('users')">
+          <span class="nav-icon">👥</span> Kullanıcılar
+        </button>
+        <button class="nav-item" id="nav-reports" onclick="showSection('reports')">
+          <span class="nav-icon">📈</span> Raporlar
+        </button>
+      </nav>
+
+      <button class="logout-btn" onclick="logout()"><span>🚪</span> Çıkış Yap</button>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Top Bar -->
+      <div class="topbar">
+        <div class="topbar-left">
+          <h2 class="page-title" id="page-title">Dashboard</h2>
+        </div>
+        <div class="topbar-right">
+          <div class="role-indicator" id="role-indicator">
+            <span class="role-dot admin-dot" id="role-dot"></span>
+            <span id="role-label">Admin Modu</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Toast Notification -->
+      <div class="toast" id="toast"></div>
+
+      <!-- ====== DASHBOARD SECTION ====== -->
+      <section id="section-dashboard" class="content-section active">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon blue-icon">📁</div>
+            <div class="stat-info">
+              <div class="stat-value" id="stat-projects">8</div>
+              <div class="stat-label">Toplam Proje</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green-icon">✅</div>
+            <div class="stat-info">
+              <div class="stat-value">3</div>
+              <div class="stat-label">Tamamlanan</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon yellow-icon">⚡</div>
+            <div class="stat-info">
+              <div class="stat-value">4</div>
+              <div class="stat-label">Devam Eden</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon purple-icon">👥</div>
+            <div class="stat-info">
+              <div class="stat-value" id="stat-users">5</div>
+              <div class="stat-label">Kullanıcılar</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-bottom">
+          <div class="recent-activity">
+            <h3 class="section-heading">Son Aktiviteler</h3>
+            <div class="activity-list" id="activity-list">
+              <div class="activity-item"><div class="activity-dot green-dot"></div><div class="activity-text"><strong>admin</strong> yeni proje oluşturdu: <em>E-Ticaret Platformu</em></div><div class="activity-time">2 dk önce</div></div>
+              <div class="activity-item"><div class="activity-dot blue-dot"></div><div class="activity-text"><strong>editor</strong> proje güncelledi: <em>Mobil Uygulama</em></div><div class="activity-time">15 dk önce</div></div>
+              <div class="activity-item"><div class="activity-dot yellow-dot"></div><div class="activity-text"><strong>viewer</strong> rapor görüntuledi</div><div class="activity-time">1 saat önce</div></div>
+              <div class="activity-item"><div class="activity-dot red-dot"></div><div class="activity-text"><strong>admin</strong> kullanıcı sildi: <em>old_user</em></div><div class="activity-time">3 saat önce</div></div>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:20px">
+            <div class="my-permissions">
+              <h3 class="section-heading">Mevcut Yetkilerim</h3>
+              <div class="perm-list" id="perm-list"></div>
+            </div>
+            <div class="my-permissions">
+              <h3 class="section-heading">🛡️ Güvenlik Logu</h3>
+              <div id="security-log-list" class="security-log-list"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== PROJECTS SECTION ====== -->
+      <section id="section-projects" class="content-section">
+        <div class="section-toolbar">
+          <div class="toolbar-left">
+            <input type="text" class="search-input" placeholder="🔍  Proje ara..." id="project-search" oninput="filterProjects()" />
+          </div>
+          <div class="toolbar-right">
+            <button class="btn btn-primary" id="btn-new-project" onclick="openModal('new-project')">
+              + Yeni Proje
+            </button>
+          </div>
+        </div>
+
+        <div class="project-grid" id="project-grid"></div>
+      </section>
+
+      <!-- ====== USERS SECTION ====== -->
+      <section id="section-users" class="content-section">
+        <div class="section-toolbar">
+          <div class="toolbar-left">
+            <h3 class="section-heading" style="margin:0">Kullanıcı Listesi</h3>
+          </div>
+          <div class="toolbar-right">
+            <button class="btn btn-primary" id="btn-invite-user" onclick="openModal('invite-user')">
+              + Kullanıcı Ekle
+            </button>
+          </div>
+        </div>
+
+        <div class="users-table-wrap">
+          <table class="users-table">
+            <thead>
+              <tr>
+                <th>Kullanıcı</th>
+                <th>E-posta</th>
+                <th>Rol</th>
+                <th>Durum</th>
+                <th>İşlemler</th>
+              </tr>
+            </thead>
+            <tbody id="users-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ====== REPORTS SECTION ====== -->
+      <section id="section-reports" class="content-section">
+        <div class="reports-grid">
+          <div class="report-card">
+            <div class="report-header">
+              <h3>Proje Durum Dağılımı</h3>
+              <span class="report-badge">Özet</span>
+            </div>
+            <div class="bar-chart">
+              <div class="bar-row">
+                <span class="bar-label">Tamamlandı</span>
+                <div class="bar-track"><div class="bar-fill green-fill" style="width:37.5%">3</div></div>
+              </div>
+              <div class="bar-row">
+                <span class="bar-label">Devam Ediyor</span>
+                <div class="bar-track"><div class="bar-fill blue-fill" style="width:50%">4</div></div>
+              </div>
+              <div class="bar-row">
+                <span class="bar-label">Beklemede</span>
+                <div class="bar-track"><div class="bar-fill yellow-fill" style="width:12.5%">1</div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="report-card">
+            <div class="report-header">
+              <h3>Kullanıcı Rol Dağılımı</h3>
+              <span class="report-badge">Özet</span>
+            </div>
+            <div class="donut-chart-wrap">
+              <svg class="donut-chart" viewBox="0 0 120 120">
+                <circle cx="60" cy="60" r="45" fill="none" stroke="#1e293b" stroke-width="20"/>
+                <circle cx="60" cy="60" r="45" fill="none" stroke="#6366f1" stroke-width="20"
+                  stroke-dasharray="94.25 188.5" stroke-dashoffset="0" />
+                <circle cx="60" cy="60" r="45" fill="none" stroke="#22d3ee" stroke-width="20"
+                  stroke-dasharray="94.25 188.5" stroke-dashoffset="-94.25" />
+                <circle cx="60" cy="60" r="45" fill="none" stroke="#a855f7" stroke-width="20"
+                  stroke-dasharray="94.25 188.5" stroke-dashoffset="-188.5" />
+              </svg>
+              <div class="donut-legend">
+                <div class="legend-item"><span class="legend-dot" style="background:#6366f1"></span> Admin (2)</div>
+                <div class="legend-item"><span class="legend-dot" style="background:#22d3ee"></span> Editor (2)</div>
+                <div class="legend-item"><span class="legend-dot" style="background:#a855f7"></span> Viewer (1)</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="report-card full-width">
+            <div class="report-header">
+              <h3>Aylık Proje Aktivitesi</h3>
+              <span class="report-badge">Trend</span>
+            </div>
+            <div class="sparkline-wrap">
+              <div class="sparkline-bar" style="height:40%"><div class="spark-tip">Oca</div></div>
+              <div class="sparkline-bar" style="height:55%"><div class="spark-tip">Şub</div></div>
+              <div class="sparkline-bar" style="height:70%"><div class="spark-tip">Mar</div></div>
+              <div class="sparkline-bar" style="height:45%"><div class="spark-tip">Nis</div></div>
+              <div class="sparkline-bar" style="height:85%"><div class="spark-tip">May</div></div>
+              <div class="sparkline-bar" style="height:60%"><div class="spark-tip">Haz</div></div>
+              <div class="sparkline-bar" style="height:90%"><div class="spark-tip">Tem</div></div>
+              <div class="sparkline-bar active-bar" style="height:75%"><div class="spark-tip">Ağu</div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ===================== MODALS ===================== -->
+  <div class="modal-overlay" id="modal-overlay" onclick="closeModal()">
+    <div class="modal" id="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-title">Modal</h3>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+    </div>
+  </div>
+
+  <!-- ===================== ACCESS DENIED ===================== -->
+  <div class="access-denied-overlay" id="access-denied" style="display:none">
+    <div class="access-denied-card">
+      <div class="denied-icon">🚫</div>
+      <h2>Erişim Reddedildi</h2>
+      <p id="denied-msg">Bu işlem için yetkiniz bulunmamaktadır.</p>
+      <button class="btn btn-primary" onclick="document.getElementById('access-denied').style.display='none'">Tamam</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
